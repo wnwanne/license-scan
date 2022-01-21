@@ -1,8 +1,7 @@
-import json
 import boto3
 
 
-def index_faces(bucket, photo, pic_id, collection_id):
+def index_faces(bucket, photo, pic_id, collection_id, table_name):
     client = boto3.client('rekognition')
 
     col_resp = client.index_faces(CollectionId=collection_id,
@@ -12,7 +11,7 @@ def index_faces(bucket, photo, pic_id, collection_id):
                                   QualityFilter="AUTO",
                                   DetectionAttributes=['ALL'])
 
-    # Pull features from response
+    # Parse features from response
     age_low = col_resp['FaceRecords'][0]['FaceDetail']['AgeRange']['Low']
     age_high = col_resp['FaceRecords'][0]['FaceDetail']['AgeRange']['High']
     response_Smile = col_resp['FaceRecords'][0]['FaceDetail']['Smile']['Value']
@@ -34,7 +33,7 @@ def index_faces(bucket, photo, pic_id, collection_id):
 
     emotion = max(emo_dict, key=emo_dict.get)
 
-    put_stats(pic_name=pic_id, age_low=age_low, age_high=age_high, response_Smile=response_Smile,
+    put_stats(table_name=table_name, pic_name=pic_id, age_low=age_low, age_high=age_high, response_Smile=response_Smile,
               response_Eyeglasses=response_Eyeglasses, response_Sunglasses=response_Sunglasses,
               response_Gender=response_Gender, response_Beard=response_Beard,
               response_Mustache=response_Mustache,
@@ -42,14 +41,14 @@ def index_faces(bucket, photo, pic_id, collection_id):
               face_id=face_id)
 
 
-def put_stats(pic_name, age_low, age_high, response_Smile,
+def put_stats(table_name, pic_name, age_low, age_high, response_Smile,
               response_Eyeglasses, response_Sunglasses,
               response_Gender, response_Beard, response_Mustache,
               response_EyesOpen, response_MouthOpen, emotion, face_id, dynamodb=None):
     if not dynamodb:
         dynamodb = boto3.resource('dynamodb')
 
-    table = dynamodb.Table('license_scan')
+    table = dynamodb.Table(table_name)
     response = table.put_item(
         Item={
             'pic_id': pic_name,
@@ -74,6 +73,11 @@ def lambda_handler(event, context):
     bucket = event['Records'][0]['s3']['bucket']['name']
     pho_path = event['Records'][0]['s3']['object']['key']
     pic_id = pho_path.split('/')[1]
-    col_id = 'license_scan_collection'
 
-    index_faces(bucket=bucket, photo=pho_path, pic_id=pic_id, collection_id=col_id)
+    # add collection ID
+    col_id = ''
+
+    # add DynamoDB table name
+    table_name = ''
+
+    index_faces(bucket=bucket, photo=pho_path, pic_id=pic_id, collection_id=col_id, table_name=table_name)
