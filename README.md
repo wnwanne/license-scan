@@ -1,5 +1,5 @@
 # license-scan
-Web application leveraging rekogntion, lambda, and S3 to scan licenses and return pertinent information
+Web application leveraging rekogntion, lambda, and S3 to scan face images and return pertinent information. This version only supports face scans but a later version can include text detection to pull information such as name, DoB, etc from the license. 
 
 # Setup Steps
 
