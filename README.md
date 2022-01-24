@@ -25,4 +25,5 @@ Web application leveraging rekogntion, lambda, and S3 to scan face images and re
 
 ## Using App
 - Navigate to the URL and upload a picture
+  - Its immportant that the picture doesnt have any "/" in the name. Best to rename it to something will hyphens ("-") or underscores ("_"). For example rename "this/picture" to "this-picture" or "this_picture"
 - Wait a few seconds as the process takes place and click on the display tab to view the results
